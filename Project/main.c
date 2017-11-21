@@ -7,9 +7,11 @@
 #include "global.h"
 #include "tools.h"
 #include "charge.h"
+#include "led.h"
 
 int main(void)
 {
+    uint32_t cnt = 0;
 	Delay_Init();			//延时初始化
 	
 	TIM1_CH1N_PWM_Init(1895,0);				//72000/(1895+1) = 37.99K		power_LED初始化
@@ -39,10 +41,11 @@ int main(void)
 	while(1)
 	{
 		delay_ms(10);
-		
+		cnt++;
 		update_status();													//更新所有状态
 		deal_with_status();												//不同状态下的控制处理
 		deal_with_light();												//不同状态下的灯光处理
+        IndicatorLed(cnt);
 	}
 
 }

@@ -15,6 +15,7 @@ void sysled_init(void);				//系统灯
 void display_led_init(void);	//LED IO初始化
 void display_led_on(uint8_t index);		//LED亮几颗就填几
 void power_led_init(void);			//中间power灯
+void IndicatorLed(uint32_t tick);
 
 #endif
 

@@ -32,6 +32,7 @@
  *
  ******************************************************************************/
 #include "led.h"
+#include "global.h"
 
 
 void sysled_init(void)
@@ -137,5 +138,54 @@ void power_led_init(void)
   GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
 	GPIO_ResetBits(GPIOA, GPIO_Pin_7);//设置GPIOA.7为高电平，关闭LED
+}
+
+void IndicatorLedOn(void)
+{
+    GPIO_ResetBits(GPIOB, GPIO_Pin_12);//设置GPIOB.12为高电平，关闭LED
+}
+void IndicatorLedOff(void)
+{
+    GPIO_SetBits(GPIOB, GPIO_Pin_12);//设置GPIOB.12为高电平，关闭LED
+}
+
+#define INDICATOR_LED_WAITING_PERIOD                400/10
+#define INDICATOR_LED_ERROR_PERIOD                150/10
+#define INDICATOR_LED_POWER_ON_DELAY_TIME   10000/10  
+void IndicatorLed(uint32_t tick)
+{
+    static uint32_t start_tick = 0;
+    static uint8_t cnt = 0;
+    
+//    static uint8_t power_on_delay_flag = 0;
+//    if(power_on_delay_flag == 0)
+//    {
+//        if(tick < INDICATOR_LED_POWER_ON_DELAY_TIME)
+//        {
+//            return ;
+//        }
+//        power_on_delay_flag = 1;
+//    }
+ 
+    if(sys_status == STATUS_WAITING)
+    {
+        if(start_tick == 0)
+        {
+            start_tick = tick;
+        }
+        if(tick - start_tick >= INDICATOR_LED_WAITING_PERIOD)
+        {
+            if(cnt++ % 2)
+            {
+                IndicatorLedOn();
+            }
+            else
+            {
+                IndicatorLedOff();
+            }
+            start_tick = tick;
+        }
+    }  
+
 }
 /********************* (C) COPYRIGHT 2014 WWW.UCORTEX.COM **********END OF FILE**********/
