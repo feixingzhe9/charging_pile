@@ -1,6 +1,6 @@
 #include "global.h"
 
-uint8_t sys_status = STATUS_FULL;
+uint8_t sys_status = STATUS_ERR;
 
 uint8_t sys_power = REMOTE_NONE;
 

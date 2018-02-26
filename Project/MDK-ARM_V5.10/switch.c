@@ -108,6 +108,10 @@ uint8_t switch_scan(void)
 	uint8_t switch2_value;
 	switch1_value = switch1_scan();
 	switch2_value = switch2_scan();
+    
+    //return SWITCH_ON ;//test code
+    
+    
 	if((SWITCH_OUT == switch1_value)&&(SWITCH_OUT == switch2_value))
 	{
 		return SWITCH_ON ;

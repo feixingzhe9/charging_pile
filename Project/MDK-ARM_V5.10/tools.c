@@ -5,10 +5,15 @@ static uint8_t ID_filter(uint8_t get_ID)
 	static uint8_t id_arry[10] = {0};
 	uint8_t i;
 	uint8_t id_value;
-	uint8_t num_33 = 0;
-	uint8_t num_66 = 0;
-	uint8_t num_99 = 0;
-	uint8_t num_100= 0;
+//	uint8_t level_1 = 0;
+//	uint8_t level_2 = 0;
+//	uint8_t level_3 = 0;
+//	uint8_t level_4= 0;
+//    uint8_t level_5= 0;
+    uint8_t level[5] = {0};
+    
+    uint8_t max = 0; 
+    uint8_t index = 0; 
 	
 	for(i=0;i<9;i++)
 	{
@@ -20,20 +25,24 @@ static uint8_t ID_filter(uint8_t get_ID)
 	{
 		switch(id_arry[i])
 		{
-			case REMOTE_ID_POWER_33:
-				num_33++;
+			case REMOTE_ID_POWER_1:
+				level[0]++;
 				break;
 			
-			case REMOTE_ID_POWER_66:
-				num_66++;
+			case REMOTE_ID_POWER_2:
+				level[1]++;
 				break;
 			
-			case REMOTE_ID_POWER_99:
-				num_99++;
+			case REMOTE_ID_POWER_3:
+				level[2]++;
 			break;
 	
-			case REMOTE_ID_POWER_100:
-				num_100++;
+			case REMOTE_ID_POWER_4:
+				level[3]++;
+			break;
+            
+            case REMOTE_ID_POWER_MAX:
+				level[4]++;
 			break;
 			
 			default:
@@ -41,6 +50,37 @@ static uint8_t ID_filter(uint8_t get_ID)
 		}
 	}
 	
+    
+    
+    for (i = 0; i < 5; i++) 
+    {
+        if(level[i] > max)
+        {
+            max = level[i];
+            index = i;
+        }
+    }
+    switch(index)
+    {
+        case 0:
+            id_value = REMOTE_ID_POWER_1;
+            break;
+        case 1:
+            id_value = REMOTE_ID_POWER_2;
+            break;
+        case 2:
+            id_value = REMOTE_ID_POWER_3;
+            break;
+        case 3:
+            id_value = REMOTE_ID_POWER_4;
+            break;
+        case 4:
+            id_value = REMOTE_ID_POWER_MAX;
+            break;
+    }
+    
+        
+#if 0
 	if(num_33 > num_66)
 	{
 		if(num_33 > num_99)
@@ -91,6 +131,7 @@ static uint8_t ID_filter(uint8_t get_ID)
 			}
 		}	
 	}
+#endif
 	return id_value;
 }
 
@@ -109,11 +150,11 @@ void update_status(void)
 			if(light_ID != 0)
 			{
 				light_ID = ID_filter(light_ID);
-				if(light_ID == REMOTE_ID_POWER_100)
+				if(light_ID == REMOTE_ID_POWER_MAX)
 				{
 					sys_status = STATUS_FULL;
 //					printf("sys_status = STATUS_FULL\r\n");
-					sys_power = REMOTE_ID_POWER_100;
+					sys_power = REMOTE_ID_POWER_MAX;
 				}
 				else
 				{
@@ -280,6 +321,7 @@ void deal_with_light(void)
 			if(light_1s_flag == TIME_UP)
 			{
 				light_1s_flag = TIME_NOT_UP;
+#if 0               
 				switch(sys_power)
 				{
 					case REMOTE_ID_POWER_33:
@@ -300,6 +342,55 @@ void deal_with_light(void)
 //						printf("99\r\n");
 						break;
 				}
+#else
+                led_num++;
+                switch(sys_power)
+				{
+					case REMOTE_ID_POWER_1:
+						display_led_on((led_num)%2);
+//						printf("33\r\n");
+						break;
+					
+					case REMOTE_ID_POWER_2:
+						display_led_on((led_num)%2 + 1);
+//						printf("66\r\n");
+						break;
+					
+					case REMOTE_ID_POWER_3:
+						display_led_on((led_num)%2 + 2);
+//						printf("99\r\n");
+						break;
+                    case REMOTE_ID_POWER_4:
+						display_led_on((led_num)%2 + 3);
+//						printf("99\r\n");
+						break;
+                    case REMOTE_ID_POWER_MAX:
+						display_led_on(4);
+//						printf("99\r\n");
+						break;
+				}
+//                led_num++;
+//                if(sys_power < 25)
+//                {
+//                    display_led_on((led_num)%2);
+//                }
+//                else if(sys_power < 50) 
+//                {
+//                    display_led_on((led_num)%2 + 1);
+//                }
+//                else if(sys_power < 75)
+//                {
+//                    display_led_on((led_num)%2 + 2);
+//                }
+//                else if(sys_power < 100)
+//                {
+//                    display_led_on((led_num)%2 + 3);
+//                }
+//                else if(sys_power == 100)
+//                {
+//                    display_led_on(4);
+//                }
+#endif               
 			}
 			power_ligh_style(STATUS_PLUS);//电源灯变色
 			break;

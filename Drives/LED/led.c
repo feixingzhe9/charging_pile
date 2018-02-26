@@ -142,11 +142,11 @@ void power_led_init(void)
 
 void IndicatorLedOn(void)
 {
-    GPIO_ResetBits(GPIOB, GPIO_Pin_12);//设置GPIOB.12为高电平，关闭LED
+    SYS_LED = 1;
 }
 void IndicatorLedOff(void)
 {
-    GPIO_SetBits(GPIOB, GPIO_Pin_12);//设置GPIOB.12为高电平，关闭LED
+    SYS_LED = 0;
 }
 
 #define INDICATOR_LED_WAITING_PERIOD                400/10
@@ -167,24 +167,26 @@ void IndicatorLed(uint32_t tick)
 //        power_on_delay_flag = 1;
 //    }
  
-    if(sys_status == STATUS_WAITING)
+    if(start_tick == 0)
     {
-        if(start_tick == 0)
+        start_tick = tick;   
+    }
+    if(tick - start_tick >= INDICATOR_LED_WAITING_PERIOD)
+    {
+        if(cnt++ % 2)
         {
-            start_tick = tick;
+            IndicatorLedOn();
         }
-        if(tick - start_tick >= INDICATOR_LED_WAITING_PERIOD)
+        else
         {
-            if(cnt++ % 2)
-            {
-                IndicatorLedOn();
-            }
-            else
-            {
-                IndicatorLedOff();
-            }
-            start_tick = tick;
+            IndicatorLedOff();
         }
+        start_tick = tick;
+    }
+    
+    if(sys_status == STATUS_WAITING)
+    {       
+        LED1 = 1; 
     }  
 
 }
