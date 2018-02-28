@@ -28,5 +28,5 @@ void charge_ctl_on(void)
 void charge_ctl_off(void)
 {
 	CHARGE = 0;
-    FAN_CTRL = 0;
+//    FAN_CTRL = 0;
 }

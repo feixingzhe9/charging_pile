@@ -30,6 +30,7 @@
 #include "rtc.h"
 #include "timer.h"
 #include "global.h"
+#include "adc.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
@@ -315,6 +316,27 @@ void DMA1_Channel4_IRQHandler(void)
 			DMA_ClearFlag(DMA1_FLAG_TC4);         // 清除标志
 			DMA_Cmd(DMA1_Channel4, DISABLE);   // 关闭DMA通道			
 		}
+}
+
+
+
+
+void ADC1_2_IRQHandler(void)
+{
+	
+  ADC_ITConfig(ADC1,ADC_IT_AWD,DISABLE);
+	
+  ADC_ClearFlag(ADC1,ADC_FLAG_AWD);
+  ADC_ClearITPendingBit(ADC1,ADC_IT_AWD);
+	
+  if(ADC_GetITStatus(ADC1,ADC_IT_AWD) != RESET)
+  {
+
+  }
+
+  //ADC_disable();
+  FAN_CTRL = 1;
+
 }
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

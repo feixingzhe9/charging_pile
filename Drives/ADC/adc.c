@@ -46,6 +46,8 @@
 __IO uint16_t ADC_Buffer[2];
 #endif
 
+
+
 /**
   * @brief ADC初始化
 	* @param none
@@ -54,37 +56,39 @@ __IO uint16_t ADC_Buffer[2];
   */ 
 void ADC_Initialize(void)
 {
-	ADC_InitTypeDef ADC_InitStructure;
+    ADC_InitTypeDef ADC_InitStructure; 
 	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	/* 使能GPIOA，ADC1,AFIO时钟 */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_ADC1, ENABLE);
-	
-	/* 设置ADCCLK分频因子 ADCCLK = PCLK2/6，即 72MHz/6 = 12MHz */
-  RCC_ADCCLKConfig(RCC_PCLK2_Div6);
 
-  /* 配置 PA.00 (ADC1_IN0) 作为模拟输入引脚 */
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
-	ADC_DeInit(ADC1);  //将ADC1设为缺省值
-	ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;	//独立模式
-	ADC_InitStructure.ADC_ScanConvMode = DISABLE;				//单通道模式
-	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;	//单次转换
-	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;	//软件触发ADC转换
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA |RCC_APB2Periph_ADC1	, ENABLE );	  //使能ADC1通道时钟
+ 
+
+	RCC_ADCCLKConfig(RCC_PCLK2_Div6);   //设置ADC分频因子6 72M/6=12,ADC最大时间不能超过14M
+ 
+	//PA1 作为模拟通道输入引脚                         
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;		//模拟输入引脚
+	GPIO_Init(GPIOA, &GPIO_InitStructure);	
+
+	ADC_DeInit(ADC1);  //复位ADC1,将外设 ADC1 的全部寄存器重设为缺省值
+
+	ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;	//ADC工作模式:ADC1和ADC2工作在独立模式
+	ADC_InitStructure.ADC_ScanConvMode = DISABLE;	//模数转换工作在单通道模式
+	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;	//模数转换工作在单次转换模式
+	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;	//转换由软件而不是外部触发启动
 	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;	//ADC数据右对齐
-	ADC_InitStructure.ADC_NbrOfChannel = 1;	//规则转换通道数目
-	ADC_Init(ADC1, &ADC_InitStructure);	//根据ADC_InitStruct初始化ADC
+	ADC_InitStructure.ADC_NbrOfChannel = 1;	//顺序进行规则转换的ADC通道的数目
+	ADC_Init(ADC1, &ADC_InitStructure);	//根据ADC_InitStruct中指定的参数初始化外设ADCx的寄存器   
+
+  
+	ADC_Cmd(ADC1, ENABLE);	//使能指定的ADC1
 	
-	ADC_TempSensorVrefintCmd(ENABLE); //开启内部温度传感器，不需要开启时请注释掉这一句
-	
-	ADC_Cmd(ADC1, ENABLE);	//使能ADC1
-	
-	ADC_ResetCalibration(ADC1);	//复位ADC校准寄存器
+	ADC_ResetCalibration(ADC1);	//使能复位校准  
+	 
 	while(ADC_GetResetCalibrationStatus(ADC1));	//等待复位校准结束
+	
 	ADC_StartCalibration(ADC1);	 //开启AD校准
-	while(ADC_GetCalibrationStatus(ADC1));	 //等待校准结束 
+ 
+	while(ADC_GetCalibrationStatus(ADC1));	 //等待校准结束
 }
 
 /**
@@ -124,6 +128,19 @@ uint16_t Get_Adc_Average(ADC_TypeDef* ADCx, uint8_t ch)
 	return adc_val/10;
 }
 
+
+//void ADC_disable(void)
+//{
+////	ADC_Cmd(ADC1, DISABLE);	//失能ADC1 
+//	ADC_SoftwareStartConvCmd(ADC1, DISABLE);             //ADC1转换启动 
+//	ADC_ExternalTrigConvCmd(ADC1, DISABLE);              //使能ADC经外部触发启动转换功能	
+//	ADC_ClearFlag(ADC1,ADC_FLAG_AWD);
+//    ADC_ClearITPendingBit(ADC1,ADC_IT_AWD);
+//	ADC_ITConfig(ADC1, ADC_IT_AWD, DISABLE);
+//}
+
+
+
 #if ADC_DMA_TRANSFER
 /**
   * @brief ADC1 DMA初始化
@@ -156,7 +173,7 @@ void ADC1_DMAInitialize(void)
 	ADC_InitStructure.ADC_NbrOfChannel = 2;	//规则转换通道数目
 	ADC_Init(ADC1, &ADC_InitStructure);	//根据ADC_InitStruct初始化ADC
 
-  ADC_TempSensorVrefintCmd(ENABLE);//开启ADC内置温度传感器CH16
+    ADC_TempSensorVrefintCmd(ENABLE);//开启ADC内置温度传感器CH16
 	
 	//常规转换序列1：ADC1_CH1
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_13Cycles5);

@@ -139,10 +139,16 @@ void update_status(void)
 {
 	uint8_t light_ID = 0;
 	uint8_t switch_status;
+    uint32_t adc_data = 0;
+    static uint16_t adc_data_tmp[10] = {0};
+    static uint8_t adc_index = 0;
+    uint8_t i = 0;
+    
 //	static uint8_t time_out = 0;
 	
 	switch_status = switch_scan();										//获取光电开关读值
 //	printf("%d\r\n",switch_status);
+    
 	switch(switch_status)
 	{
 		case SWITCH_ON:
@@ -204,6 +210,30 @@ void update_status(void)
 		default:
 			break;
 	}
+    
+    
+    adc_data_tmp[adc_index] = Get_Adc(ADC1,4);
+    if(adc_index < sizeof(adc_data_tmp)/sizeof(adc_data_tmp[0]) - 1)
+    {
+        adc_index++;
+    }
+    else
+    {
+        adc_index = 0;
+    }
+    for(i = 0; i < sizeof(adc_data_tmp)/sizeof(adc_data_tmp[0]); i++)
+    {
+        adc_data += adc_data_tmp[i];
+    }
+    adc_data = adc_data / (sizeof(adc_data_tmp)/sizeof(adc_data_tmp[0]));
+    if(adc_data > 50)
+    {
+        FAN_CTRL = 1;
+    }
+    if(adc_data < 15)
+    {
+        FAN_CTRL = 0;
+    }
 }
 
 void deal_with_status(void)

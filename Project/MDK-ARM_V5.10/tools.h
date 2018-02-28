@@ -6,6 +6,7 @@
 #include "timer.h"
 #include "led.h"
 #include "charge.h"
+#include "adc.h"
 
 void update_status(void);
 

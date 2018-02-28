@@ -61,6 +61,7 @@ uint16_t Get_Adc_Average(ADC_TypeDef* ADCx, uint8_t ch);
 void ADC1_DMAInitialize(void);
 #endif
 
+void ADC_disable(void);
 #endif
 
 /********************* (C) COPYRIGHT 2014 WWW.UCORTEX.COM **********END OF FILE**********/
