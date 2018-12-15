@@ -80,8 +80,15 @@ void TIM4_IRQHandler(void)
 		if(RmtSta&0x80)//上次有数据被接收到了
 		{	
 			RmtSta&=~0X10;						//取消上升沿已经被捕获标记
-			if((RmtSta&0X0F)==0X00)RmtSta|=1<<6;//标记已经完成一次按键的键值信息采集
-			if((RmtSta&0X0F)<14)RmtSta++;
+			if((RmtSta&0X0F)==0X00)
+            {
+                RmtSta|=1<<6;//标记已经完成一次按键的键值信息采集
+            }
+
+			if((RmtSta&0X0F)<14)
+            {
+                RmtSta++;
+            }
 			else
 			{
 				RmtSta&=~(1<<7);//清空引导标识
@@ -150,13 +157,14 @@ u8 Remote_Scan(void)
 	    t2=(RmtRec>>16)&0xff;	//得到地址反码 
 		  c1=(RmtRec>>8)&0xff;	//得到命令码
 		  c2=(RmtRec>>0)&0xff;	//得到命令反码
- 	    if((t1==(u8)~t2)&&((c1==(u8)~c2)||(c1==(u8)~(c2+1)))/*&&((t1==REMOTE_ID_POWER_33)||(t1==REMOTE_ID_POWER_66)||(t1==REMOTE_ID_POWER_99)||(t1==REMOTE_ID_POWER_100))*/)//检验遥控识别码(ID)及地址 
+ 	    if((t1==(u8)~t2)&&((c1==(u8)~c2)||(c1==(u8)~(c2+1)))&&((t1==REMOTE_ID_POWER_1)||(t1==REMOTE_ID_POWER_2)||(t1==REMOTE_ID_POWER_3)||(t1==REMOTE_ID_POWER_4)||(t1==REMOTE_ID_POWER_100)))//检验遥控识别码(ID)及地址 
 	    { 
 				printf("t1=%x,t2=%x,c1=%x,c2=%x\r\n",t1,t2,c1,c2);
 //	        t1=RmtRec>>8;
 //	        t2=RmtRec; 	
 //	        if(t1==(u8)~t2)sta=t1;//键值正确	 
 				value = t1;
+            RmtRec = 0;
 			}
 			else
 			{

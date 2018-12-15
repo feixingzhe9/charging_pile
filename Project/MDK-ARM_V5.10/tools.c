@@ -1,8 +1,9 @@
 #include "tools.h"
 
+#define ID_FILTER_SIZE  3
+uint8_t id_arry[ID_FILTER_SIZE] = {0};
 static uint8_t ID_filter(uint8_t get_ID)
 {
-	static uint8_t id_arry[10] = {0};
 	uint8_t i;
 	uint8_t id_value;
 //	uint8_t level_1 = 0;
@@ -15,13 +16,13 @@ static uint8_t ID_filter(uint8_t get_ID)
     uint8_t max = 0; 
     uint8_t index = 0; 
 	
-	for(i=0;i<9;i++)
+	for(i = 0; i < ID_FILTER_SIZE - 1; i++)
 	{
 		id_arry[i] = id_arry[i+1];
 	}
-	id_arry[9] = get_ID;
+	id_arry[ID_FILTER_SIZE - 1] = get_ID;
 	
-	for(i=0;i<10;i++)
+	for(i = 0; i < ID_FILTER_SIZE; i++)
 	{
 		switch(id_arry[i])
 		{
@@ -49,9 +50,7 @@ static uint8_t ID_filter(uint8_t get_ID)
 				break;
 		}
 	}
-	
-    
-    
+
     for (i = 0; i < 5; i++) 
     {
         if(level[i] > max)
@@ -60,79 +59,42 @@ static uint8_t ID_filter(uint8_t get_ID)
             index = i;
         }
     }
-    switch(index)
+
+//    if(level[index] > 3)
     {
-        case 0:
-            id_value = REMOTE_ID_POWER_1;
-            break;
-        case 1:
-            id_value = REMOTE_ID_POWER_2;
-            break;
-        case 2:
-            id_value = REMOTE_ID_POWER_3;
-            break;
-        case 3:
-            id_value = REMOTE_ID_POWER_4;
-            break;
-        case 4:
-            id_value = REMOTE_ID_POWER_MAX;
-            break;
+        switch(index)
+        {
+            case 0:
+                id_value = REMOTE_ID_POWER_1;
+                break;
+            case 1:
+                id_value = REMOTE_ID_POWER_2;
+                break;
+            case 2:
+                id_value = REMOTE_ID_POWER_3;
+                break;
+            case 3:
+                id_value = REMOTE_ID_POWER_4;
+                break;
+            case 4:
+                id_value = REMOTE_ID_POWER_MAX;
+                break;
+        }
     }
-    
-        
-#if 0
-	if(num_33 > num_66)
-	{
-		if(num_33 > num_99)
-		{
-			if(num_33 > num_100)
-			{
-				id_value = REMOTE_ID_POWER_33;
-			}
-			else
-			{
-				id_value = REMOTE_ID_POWER_100;
-			}
-		}
-		else
-		{
-			if(num_99 > num_100)
-			{
-				id_value = REMOTE_ID_POWER_99;
-			}
-			else
-			{
-				id_value = REMOTE_ID_POWER_100;
-			}
-		}	
-	}
-	else
-	{
-		if(num_66 > num_99)
-		{
-			if(num_66 > num_100)
-			{
-				id_value = REMOTE_ID_POWER_66;
-			}
-			else
-			{
-				id_value = REMOTE_ID_POWER_100;
-			}
-		}
-		else
-		{
-			if(num_99 > num_100)
-			{
-				id_value = REMOTE_ID_POWER_99;
-			}
-			else
-			{
-				id_value = REMOTE_ID_POWER_100;
-			}
-		}	
-	}
-#endif
+//    else
+//    {
+//        id_value = 0;
+//    }
 	return id_value;
+}
+
+static void clear_id_array(void)
+{
+    uint8_t i;
+    for(i = 0; i < ID_FILTER_SIZE; i++)
+    {
+        id_arry[i] = 0;
+    }
 }
 
 void update_status(void)
@@ -199,11 +161,13 @@ void update_status(void)
 			sys_status = STATUS_ERR;
 			err_state = ERR_SWITCH;
 //			printf("sys_status = STATUS_ERR2\r\n");	
+            clear_id_array();
 			break;
 		
 		case SWITCH_OFF:
 			sys_power = REMOTE_NONE;
 			sys_status = STATUS_WAITING;
+            clear_id_array();
 //			printf("sys_status = STATUS_WAITING\r\n");
 			break;
 		
@@ -239,6 +203,7 @@ void update_status(void)
 void deal_with_status(void)
 {
 	static uint8_t i_cnt = 0;
+    static uint8_t test_cnt = 0;
 	switch(sys_status)
 	{
 		case STATUS_WAITING:
@@ -266,7 +231,11 @@ void deal_with_status(void)
 				TIM4_CH4_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//右
 				TIM4_CH3_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//左	
 				SendData1(REMOTE_ID_POWER_ON,REMOTE_ID_POWER_ON);
-				Remote_Init();			//红外接收初始化	
+                if(test_cnt++ % 2 == 0)
+                {
+                    delay_ms(50);
+                    Remote_Init();			//红外接收初始化	
+                }
 			}
 			break;
 		
@@ -279,7 +248,11 @@ void deal_with_status(void)
 				TIM4_CH4_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//右
 				TIM4_CH3_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//左	
 				SendData1(REMOTE_ID_POWER_OFF,REMOTE_ID_POWER_OFF);
-				Remote_Init();			//红外接收初始化			
+				if(test_cnt++ % 2 == 0)
+                {
+                    delay_ms(50);
+                    Remote_Init();			//红外接收初始化	
+                }
 			}
 			break;
 		
