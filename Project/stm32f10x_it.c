@@ -299,8 +299,6 @@ void TIM3_IRQHandler(void)   //TIM3ÖÐ¶Ï
 		timer_1s_flag = TIME_UP;
 		status_1s_flag = TIME_UP;
 		light_1s_flag = TIME_UP;
-		SYS_LED = !SYS_LED;
-//		GPIO_ResetBits(GPIOA,GPIO_Pin_9);
 
 	}
 }

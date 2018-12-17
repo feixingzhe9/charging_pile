@@ -100,6 +100,7 @@ static void clear_id_array(void)
 void update_status(void)
 {
 	uint8_t light_ID = 0;
+    uint8_t light_ID_tmp = 0;
 	uint8_t switch_status;
     uint32_t adc_data = 0;
     static uint16_t adc_data_tmp[10] = {0};
@@ -114,14 +115,16 @@ void update_status(void)
 	switch(switch_status)
 	{
 		case SWITCH_ON:
-			light_ID = Remote_Scan();													//获取红外读值
-			if(light_ID != 0)
+			light_ID_tmp = Remote_Scan();													//获取红外读值
+			if(light_ID_tmp != 0)
 			{
-				light_ID = ID_filter(light_ID);
+//                printf("get remote id = %d\r\n", light_ID);
+				light_ID = ID_filter(light_ID_tmp);
+                printf("remote id 0x%x, after filter: 0x%x\r\n", light_ID_tmp, light_ID);
 				if(light_ID == REMOTE_ID_POWER_MAX)
 				{
 					sys_status = STATUS_FULL;
-//					printf("sys_status = STATUS_FULL\r\n");
+					printf("sys_status = STATUS_FULL\r\n");
 					sys_power = REMOTE_ID_POWER_MAX;
 				}
 				else
@@ -160,7 +163,6 @@ void update_status(void)
 			sys_power = REMOTE_NONE;
 			sys_status = STATUS_ERR;
 			err_state = ERR_SWITCH;
-//			printf("sys_status = STATUS_ERR2\r\n");	
             clear_id_array();
 			break;
 		
@@ -220,6 +222,12 @@ void deal_with_status(void)
 			}
 			Remote_Init();			//红外接收初始化	
 			i_cnt = (i_cnt+1)%8;
+
+            if(timer_1s_flag == TIME_UP)
+			{
+				timer_1s_flag = TIME_NOT_UP;
+                printf("STATUS_WAITING . . .\r\n");
+            }
 			break;
 		
 		case STATUS_PLUS:
@@ -234,8 +242,9 @@ void deal_with_status(void)
                 if(test_cnt++ % 2 == 0)
                 {
                     delay_ms(50);
-                    Remote_Init();			//红外接收初始化	
+                    Remote_Init();
                 }
+                printf("STATUS_PLUS, charging . . .\r\n");
 			}
 			break;
 		
@@ -251,13 +260,28 @@ void deal_with_status(void)
 				if(test_cnt++ % 2 == 0)
                 {
                     delay_ms(50);
-                    Remote_Init();			//红外接收初始化	
+                    Remote_Init();
                 }
+                printf("STATUS_FULL, charging full \r\n");
 			}
 			break;
 		
 		case STATUS_ERR:
 			charge_ctl_off();//关闭充电
+            if(timer_1s_flag == TIME_UP)
+			{
+				timer_1s_flag = TIME_NOT_UP;
+                if(test_cnt++ % 2 == 0)
+                {
+                    delay_ms(50);
+                    Remote_Init();
+                }
+                printf("STATUS_ERR: switch status is %d \r\n", switch_scan());
+                if(switch_scan() == SWITCH_ON)
+                {
+                    printf("Switches are ALL ON, but CAN NOT get right remote id ! ! ! \r\n");
+                }
+            }
 			break;
 		
 		default:
@@ -414,86 +438,3 @@ void deal_with_light(void)
 }
 
 
-/*
-void deal_with_status(void)
-{
-	static uint8_t i_cnt = 0;
-	static uint8_t led_num;
-	switch(sys_status)
-	{
-		case STATUS_WAITING:
-			//关闭充电
-			TIM4_CH4_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//右
-			TIM4_CH3_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//左	
-			if(i_cnt == 0)
-			{	
-				SendData1(REMOTE_ID1,REMOTE_ID1);
-			}
-			if(i_cnt == 4)
-			{
-				SendData2(REMOTE_ID2,REMOTE_ID2);
-			}
-			Remote_Init();			//红外接收初始化	
-			i_cnt = (i_cnt+1)%8;
-			display_led_on(0);
-			break;
-		
-		case STATUS_PLUS:
-			//打开充电
-			if(timer_1s_flag == TIME_UP)
-			{
-//				printf("TIME_UP\r\n");
-				timer_1s_flag = TIME_NOT_UP;
-				TIM4_CH4_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//右
-				TIM4_CH3_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//左	
-				SendData1(REMOTE_ID_POWER_ON,REMOTE_ID_POWER_ON);
-				Remote_Init();			//红外接收初始化	
-				switch(sys_power)
-				{
-					case REMOTE_ID_POWER_33:
-						led_num = (led_num+1)%4;
-						display_led_on(led_num+1);
-//						printf("33\r\n");
-						break;
-					
-					case REMOTE_ID_POWER_66:
-						led_num = (led_num+1)%3;
-						display_led_on(led_num+2);
-//						printf("66\r\n");
-						break;
-					
-					case REMOTE_ID_POWER_99:
-						led_num = (led_num+1)%2;
-						display_led_on(led_num+3);
-//						printf("99\r\n");
-						break;
-				}
-				
-			}
-			break;
-		
-		case STATUS_FULL:
-			//关闭充电
-			display_led_on(4);
-			if(timer_1s_flag == TIME_UP)
-			{
-				timer_1s_flag = TIME_NOT_UP;
-				
-				TIM4_CH4_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//右
-				TIM4_CH3_PWM_Init(1895,0);	//72000/(1895+1) = 37.99K			//左	
-				SendData1(REMOTE_ID_POWER_OFF,REMOTE_ID_POWER_OFF);
-				Remote_Init();			//红外接收初始化			
-			}
-			break;
-		
-		case STATUS_ERR:
-			//关闭充电
-			display_led_on(0);
-			//电源灯变色
-			break;
-		
-		default:
-			break;
-	}
-}
-*/
