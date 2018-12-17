@@ -192,7 +192,7 @@ void update_status(void)
         adc_data += adc_data_tmp[i];
     }
     adc_data = adc_data / (sizeof(adc_data_tmp)/sizeof(adc_data_tmp[0]));
-    if(adc_data > 50)
+    if(adc_data > 30)
     {
         FAN_CTRL = 1;
     }

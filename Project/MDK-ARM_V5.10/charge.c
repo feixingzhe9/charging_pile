@@ -22,7 +22,7 @@ void charge_ctl_init(void)
 void charge_ctl_on(void)
 {
 	CHARGE = 1;
-    FAN_CTRL = 1;
+//    FAN_CTRL = 1;
 }
 
 void charge_ctl_off(void)
