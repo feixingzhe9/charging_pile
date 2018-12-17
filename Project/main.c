@@ -45,7 +45,7 @@ int main(void)
 	
 //    ADC_AnalogWatchdogSingleChannelConfig(ADC1,ADC_Channel_4);
 //	ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleRegEnable);
-        
+
 	while(1)
 	{
 		delay_ms(10);
@@ -54,14 +54,6 @@ int main(void)
 		deal_with_status();												//不同状态下的控制处理
 		deal_with_light();												//不同状态下的灯光处理
         IndicatorLed(cnt);
-        
-//        ADC_AnalogWatchdogSingleChannelConfig(ADC1,ADC_Channel_4);
-//		ADC_AnalogWatchdogCmd(ADC1,ADC_AnalogWatchdog_SingleRegEnable);
-        
-//        test_adc_data = Get_Adc(ADC1,4);
-//        FAN_CTRL = 1;
-        
 	}
-
 }
 

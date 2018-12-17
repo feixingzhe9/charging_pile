@@ -105,6 +105,7 @@ void update_status(void)
     uint32_t adc_data = 0;
     static uint16_t adc_data_tmp[10] = {0};
     static uint8_t adc_index = 0;
+    static uint32_t get_remote_id_time_out_cnt = 0;
     uint8_t i = 0;
     
 //	static uint8_t time_out = 0;
@@ -116,6 +117,7 @@ void update_status(void)
 	{
 		case SWITCH_ON:
 			light_ID_tmp = Remote_Scan();													//获取红外读值
+            get_remote_id_time_out_cnt++;
 			if(light_ID_tmp != 0)
 			{
 //                printf("get remote id = %d\r\n", light_ID);
@@ -133,9 +135,16 @@ void update_status(void)
 					sys_power = light_ID;
 				}
 //				time_out = 0;
+                get_remote_id_time_out_cnt = 0;
 			}
 			else
 			{
+                if(get_remote_id_time_out_cnt >= 1000)
+                {
+                    sys_power = REMOTE_NONE;
+					sys_status = STATUS_ERR;
+                    err_state = ERR_TIMEOUT;
+                }
 				if((sys_status != STATUS_FULL)&&(sys_status != STATUS_PLUS))
 				{
 					sys_power = REMOTE_NONE;
