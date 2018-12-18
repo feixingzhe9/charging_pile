@@ -139,11 +139,11 @@ void update_status(void)
 			}
 			else
 			{
-                if(get_remote_id_time_out_cnt >= 1000)
+                if(get_remote_id_time_out_cnt >= 3000)
                 {
-                    sys_power = REMOTE_NONE;
-					sys_status = STATUS_ERR;
-                    err_state = ERR_TIMEOUT;
+//                    sys_power = REMOTE_NONE;
+//					sys_status = STATUS_ERR;
+//                    err_state = ERR_TIMEOUT;
                 }
 				if((sys_status != STATUS_FULL)&&(sys_status != STATUS_PLUS))
 				{
